@@ -28,13 +28,22 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             ""id"": ""68957e3a-b375-4406-be7d-d59bb5a06cec"",
             ""actions"": [
                 {
-                    ""name"": ""TouchInput"",
+                    ""name"": ""Interact"",
                     ""type"": ""Button"",
                     ""id"": ""d6ba1380-2e0e-4ff1-8909-5766bba9901b"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
-                    ""initialStateCheck"": false
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Position"",
+                    ""type"": ""Value"",
+                    ""id"": ""d77fcca6-a2fd-4c45-a06f-d094fe49a1b2"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -45,18 +54,40 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""TouchInput"",
+                    ""action"": ""Interact"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
                     ""id"": ""aec77dd1-9fd2-4db6-8a53-6379384433a8"",
-                    ""path"": ""<Touchscreen>/primaryTouch"",
+                    ""path"": ""<Touchscreen>/delta"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""TouchInput"",
+                    ""action"": ""Interact"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ed3df24c-b7c4-4df4-9d26-c0bbc519cc16"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Position"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ee64a6e3-1c39-4fc1-83eb-5ac9ccbadabf"",
+                    ""path"": ""<Touchscreen>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Position"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -67,7 +98,8 @@ public partial class @Controls: IInputActionCollection2, IDisposable
 }");
         // Player
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
-        m_Player_TouchInput = m_Player.FindAction("TouchInput", throwIfNotFound: true);
+        m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
+        m_Player_Position = m_Player.FindAction("Position", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -129,12 +161,14 @@ public partial class @Controls: IInputActionCollection2, IDisposable
     // Player
     private readonly InputActionMap m_Player;
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
-    private readonly InputAction m_Player_TouchInput;
+    private readonly InputAction m_Player_Interact;
+    private readonly InputAction m_Player_Position;
     public struct PlayerActions
     {
         private @Controls m_Wrapper;
         public PlayerActions(@Controls wrapper) { m_Wrapper = wrapper; }
-        public InputAction @TouchInput => m_Wrapper.m_Player_TouchInput;
+        public InputAction @Interact => m_Wrapper.m_Player_Interact;
+        public InputAction @Position => m_Wrapper.m_Player_Position;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -144,16 +178,22 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         {
             if (instance == null || m_Wrapper.m_PlayerActionsCallbackInterfaces.Contains(instance)) return;
             m_Wrapper.m_PlayerActionsCallbackInterfaces.Add(instance);
-            @TouchInput.started += instance.OnTouchInput;
-            @TouchInput.performed += instance.OnTouchInput;
-            @TouchInput.canceled += instance.OnTouchInput;
+            @Interact.started += instance.OnInteract;
+            @Interact.performed += instance.OnInteract;
+            @Interact.canceled += instance.OnInteract;
+            @Position.started += instance.OnPosition;
+            @Position.performed += instance.OnPosition;
+            @Position.canceled += instance.OnPosition;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
         {
-            @TouchInput.started -= instance.OnTouchInput;
-            @TouchInput.performed -= instance.OnTouchInput;
-            @TouchInput.canceled -= instance.OnTouchInput;
+            @Interact.started -= instance.OnInteract;
+            @Interact.performed -= instance.OnInteract;
+            @Interact.canceled -= instance.OnInteract;
+            @Position.started -= instance.OnPosition;
+            @Position.performed -= instance.OnPosition;
+            @Position.canceled -= instance.OnPosition;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -173,6 +213,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
     public PlayerActions @Player => new PlayerActions(this);
     public interface IPlayerActions
     {
-        void OnTouchInput(InputAction.CallbackContext context);
+        void OnInteract(InputAction.CallbackContext context);
+        void OnPosition(InputAction.CallbackContext context);
     }
 }
